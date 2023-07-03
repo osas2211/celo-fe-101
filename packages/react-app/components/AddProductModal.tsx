@@ -14,9 +14,19 @@ import { useDebounce } from "use-debounce"
 import { useContractSend } from "@/hooks/contract/useContractWrite"
 // Import the erc20 contract abi to get the cUSD balance
 import erc20Instance from "../abi/erc20.json"
+// Import Balance from the Balance component
+import { Balance } from "./Balance"
+// Import Modal, Input from antd to display the modal
+import { Modal, Input } from "antd"
+
+// import useProducts
+import { useProducts } from "@/hooks/State/useProducts"
+import { useContractCall } from "@/hooks/contract/useContractRead"
 
 // Define the AddProductModal component
 const AddProductModal = () => {
+  //
+  const { getProducts, setProducts, products } = useProducts()
   // The visible state is used to toggle the visibility of the modal
   const [visible, setVisible] = useState(false)
   // The following states are used to store the values of the input fields
@@ -66,6 +76,10 @@ const AddProductModal = () => {
     productPriceInWei,
   ])
 
+  // Use the useContractCall hook to read how many products are in the marketplace contract
+  const { data } = useContractCall("getProductsLength", [], true)
+  const productLength = data ? Number(data.toString()) : 0
+
   // Define function that handles the creation of a product through the marketplace contract
   const handleCreateProduct = async () => {
     if (!createProduct) {
@@ -79,6 +93,8 @@ const AddProductModal = () => {
     // Wait for the transaction to be mined
     await purchaseTx.wait()
     // Close the modal and clear the input fields after the product is added to the marketplace
+    getProducts(productLength + 1)
+    console.log(products?.length, productLength + 1)
     setVisible(false)
     clearForm()
   }
@@ -93,6 +109,7 @@ const AddProductModal = () => {
         success: "Product created successfully",
         error: "Something went wrong. Try again.",
       })
+
       // Display an error message if something goes wrong
     } catch (e: any) {
       console.log({ e })
@@ -121,127 +138,99 @@ const AddProductModal = () => {
 
   // Define the JSX that will be rendered
   return (
-    <div className={"flex flex-row w-full justify-between"}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+      }}
+    >
       <div>
         {/* Add Product Button that opens the modal */}
         <button
           type="button"
           onClick={() => setVisible(true)}
-          className="inline-block ml-4 px-6 py-2.5 bg-black text-white font-medium text-md leading-tight rounded-2xl shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
-          data-bs-toggle="modal"
-          data-bs-target="#exampleModalCenter"
+          className="btn"
+          style={{ color: "snow" }}
         >
-          Add Product
+          + Add Product
         </button>
+        <Modal
+          title="Add Product"
+          open={visible}
+          okText={loading ? loading : "Create"}
+          okButtonProps={{
+            disabled: !!loading || !isComplete || !createProduct,
+          }}
+          onCancel={() => setVisible(false)}
+          onOk={addProduct}
+          maskStyle={{ backdropFilter: "blur(15px)" }}
+          bodyStyle={{ marginTop: 20 }}
+        >
+          {/* Add Product Modal */}
+          <form>
+            <div>
+              <div>
+                {/* Input fields for the product */}
+                <div>
+                  <label>Product Name</label>
+                  <Input
+                    style={{ marginBottom: 10 }}
+                    onChange={(e) => {
+                      setProductName(e.target.value)
+                    }}
+                    required
+                    type="text"
+                  />
 
-        {/* Modal */}
-        {visible && (
-          <div
-            className="fixed z-40 overflow-y-auto top-0 w-full left-0"
-            id="modal"
-          >
-            {/* Form with input fields for the product, that triggers the addProduct function on submit */}
-            <form onSubmit={addProduct}>
-              <div className="flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div className="fixed inset-0 transition-opacity">
-                  <div className="absolute inset-0 bg-gray-900 opacity-75" />
-                </div>
-                <span className="hidden sm:inline-block sm:align-middle sm:h-screen">
-                  &#8203;
-                </span>
-                <div
-                  className="inline-block align-center bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
-                  role="dialog"
-                  aria-modal="true"
-                  aria-labelledby="modal-headline"
-                >
-                  {/* Input fields for the product */}
-                  <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <label>Product Name</label>
-                    <input
-                      onChange={(e) => {
-                        setProductName(e.target.value)
-                      }}
-                      required
-                      type="text"
-                      className="w-full bg-gray-100 p-2 mt-2 mb-3"
-                    />
+                  <label>Product Image (URL)</label>
+                  <Input
+                    style={{ marginBottom: 10 }}
+                    onChange={(e) => {
+                      setProductImage(e.target.value)
+                    }}
+                    required
+                    type="text"
+                  />
 
-                    <label>Product Image (URL)</label>
-                    <input
-                      onChange={(e) => {
-                        setProductImage(e.target.value)
-                      }}
-                      required
-                      type="text"
-                      className="w-full bg-gray-100 p-2 mt-2 mb-3"
-                    />
+                  <label>Product Description</label>
+                  <Input
+                    style={{ marginBottom: 10 }}
+                    onChange={(e) => {
+                      setProductDescription(e.target.value)
+                    }}
+                    required
+                    type="text"
+                  />
 
-                    <label>Product Description</label>
-                    <input
-                      onChange={(e) => {
-                        setProductDescription(e.target.value)
-                      }}
-                      required
-                      type="text"
-                      className="w-full bg-gray-100 p-2 mt-2 mb-3"
-                    />
+                  <label>Product Location</label>
+                  <Input
+                    style={{ marginBottom: 10 }}
+                    onChange={(e) => {
+                      setProductLocation(e.target.value)
+                    }}
+                    required
+                    type="text"
+                  />
 
-                    <label>Product Location</label>
-                    <input
-                      onChange={(e) => {
-                        setProductLocation(e.target.value)
-                      }}
-                      required
-                      type="text"
-                      className="w-full bg-gray-100 p-2 mt-2 mb-3"
-                    />
-
-                    <label>Product Price (cUSD)</label>
-                    <input
-                      onChange={(e) => {
-                        setProductPrice(e.target.value)
-                      }}
-                      required
-                      type="number"
-                      className="w-full bg-gray-100 p-2 mt-2 mb-3"
-                    />
-                  </div>
-                  {/* Button to close the modal */}
-                  <div className="bg-gray-200 px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      className="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-700 mr-2"
-                      onClick={() => setVisible(false)}
-                    >
-                      <i className="fas fa-times"></i> Cancel
-                    </button>
-                    {/* Button to add the product to the marketplace */}
-                    <button
-                      type="submit"
-                      disabled={!!loading || !isComplete || !createProduct}
-                      className="py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-700 mr-2"
-                    >
-                      {loading ? loading : "Create"}
-                    </button>
-                  </div>
+                  <label>Product Price (cUSD)</label>
+                  <Input
+                    style={{ marginBottom: 10 }}
+                    onChange={(e) => {
+                      setProductPrice(e.target.value)
+                    }}
+                    required
+                    type="number"
+                  />
                 </div>
               </div>
-            </form>
-          </div>
-        )}
+            </div>
+          </form>
+        </Modal>
       </div>
 
       {/* Display the user's cUSD balance */}
-      {displayBalance && (
-        <span
-          className="inline-block text-dark ml-4 px-6 py-2.5 font-medium text-md leading-tight rounded-2xl shadow-none "
-          data-bs-toggle="modal"
-          data-bs-target="#exampleModalCenter"
-        >
-          Balance: {Number(cusdBalance?.formatted || 0).toFixed(2)} cUSD
-        </span>
-      )}
+      {displayBalance && <Balance cusdBalance={cusdBalance} />}
     </div>
   )
 }

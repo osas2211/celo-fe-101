@@ -19,6 +19,10 @@ import { useContractApprove } from "@/hooks/contract/useApprove"
 import { useContractCall } from "@/hooks/contract/useContractRead"
 import { useContractSend } from "@/hooks/contract/useContractWrite"
 
+// Import Button, Tag and Column from antd
+import { Button, Tag, Col } from "antd"
+// import Location Icon from ant-icons
+import { EnvironmentFilled } from "@ant-design/icons"
 // Define the interface for the product, an interface is a type that describes the properties of an object
 interface Product {
   name: string
@@ -115,63 +119,62 @@ const Product = ({ id, setError, setLoading, clear }: any) => {
 
   // Return the JSX for the product component
   return (
-    <div className={"shadow-lg relative rounded-b-lg"}>
-      <p className="group">
-        <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-white xl:aspect-w-7 xl:aspect-h-8 ">
-          {/* Show the number of products sold */}
-          <span
-            className={
-              "absolute z-10 right-0 mt-4 bg-amber-400 text-black p-1 rounded-l-lg px-4"
-            }
-          >
-            {product.sold} sold
-          </span>
-          {/* Show the product image */}
-          <img
-            src={product.image}
-            alt={"image"}
-            className="w-full h-80 rounded-t-md  object-cover object-center group-hover:opacity-75"
-          />
-          {/* Show the address of the product owner as an identicon and link to the address on the Celo Explorer */}
-          <Link
-            href={`https://explorer.celo.org/alfajores/address/${product.owner}`}
-            className={"absolute -mt-7 ml-6 h-16 w-16 rounded-full"}
-          >
-            {identiconTemplate(product.owner)}
-          </Link>
-        </div>
-
-        <div className={"m-5"}>
-          <div className={"pt-1"}>
-            {/* Show the product name */}
-            <p className="mt-4 text-2xl font-bold">{product.name}</p>
-            <div className={"h-40 overflow-y-hidden scrollbar-hide"}>
-              {/* Show the product description */}
-              <h3 className="mt-4 text-sm text-gray-700">
-                {product.description}
-              </h3>
-            </div>
-          </div>
-
-          <div>
-            <div className={"flex flex-row"}>
-              {/* Show the product location */}
-              <img src={"/location.svg"} alt="Location" className={"w-6"} />
-              <h3 className="pt-1 text-sm text-gray-700">{product.location}</h3>
-            </div>
-
-            {/* Buy button that calls the purchaseProduct function on click */}
-            <button
-              onClick={purchaseProduct}
-              className="mt-4 h-14 w-full border-[1px] border-gray-500 text-black p-2 rounded-lg hover:bg-black hover:text-white"
+    <Col xs={24} sm={12} md={8} lg={8} xl={6} xxl={6}>
+      <div className={"product-card"}>
+        <p className="">
+          <div className="">
+            {/* Show the product image */}
+            <img src={product.image} alt={"image"} className="product-image" />
+            {/* Show the address of the product owner as an identicon and link to the address on the Celo Explorer */}
+            <Link
+              href={`https://explorer.celo.org/alfajores/address/${product.owner}`}
+              className={""}
+              style={{ borderRadius: "100%", display: "inline-block" }}
             >
-              {/* Show the product price in cUSD */}
-              Buy for {productPriceFromWei} cUSD
-            </button>
+              {identiconTemplate(product.owner)}
+            </Link>
           </div>
-        </div>
-      </p>
-    </div>
+          {/* Show the number of products sold */}
+          <span className={""}>
+            <Tag color="warning" style={{ fontSize: 16 }}>
+              {product.sold} sold
+            </Tag>
+          </span>
+          <div style={{ marginTop: 10 }}>
+            <div className={""}>
+              {/* Show the product name */}
+              <p className="">{product.name}</p>
+              <div className={""}>
+                {/* Show the product description */}
+                <p style={{ fontWeight: 300 }} className="">
+                  {product.description}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <div style={{ margin: "5px 0 20px 0" }}>
+                {/* Show the product location */}
+                <EnvironmentFilled style={{ color: "var(--color-primary)" }} />
+                <small style={{ marginLeft: 10 }}>
+                  <b>{product.location}</b>
+                </small>
+              </div>
+
+              {/* Buy button that calls the purchaseProduct function on click */}
+              <Button
+                onClick={purchaseProduct}
+                style={{ width: "100%" }}
+                type="dashed"
+              >
+                {/* Show the product price in cUSD */}
+                Buy for {productPriceFromWei} cUSD
+              </Button>
+            </div>
+          </div>
+        </p>
+      </div>
+    </Col>
   )
 }
 

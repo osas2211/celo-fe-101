@@ -1,3 +1,108 @@
+:root {
+  --color-primary: #0096c7;
+  --color-primary-light: #48cae4;
+  --color-primary-dark: #023e8a;
+  --color-text-light: snow;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  padding-left: 5rem;
+  background-color: #0d0d0d;
+  box-shadow: 8px 4px 2px rgb(35, 35, 35);
+}
+.header .celo-logo {
+  height: 3rem;
+  width: auto;
+  padding: 0;
+  transform: scale(4);
+  /* padding: 1rem; */
+  display: block;
+}
+
+body {
+  background: #111111;
+}
+
+.app-body {
+  padding: 4rem;
+}
+
+.balance {
+  color: #fff;
+}
+
+.btn {
+  background: var(--color-primary);
+  border: none;
+  border-radius: 25px;
+  color: var(--color-primary-light);
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  outline: none;
+  padding: 0.5rem 2rem;
+  position: relative;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  animation: glow 1s ease-in infinite;
+}
+.btn::before {
+  animation: glow 1s ease-in infinite;
+  background: var(--color-primary);
+  border-radius: inherit;
+  content: "";
+  filter: blur(15px);
+  opacity: 0.85;
+  position: absolute;
+  transition: all 0.3s ease-in-out;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  z-index: -1;
+}
+.btn:hover::before {
+  filter: blur(25px);
+  opacity: 1;
+}
+
+.product-card {
+  padding: 1rem;
+  color: #fff;
+  background-color: #1c1c1c;
+  /* box-shadow: 12px 8px 4px #232323; */
+  border-radius: 10px;
+}
+
+.product-image {
+  width: 100%;
+  height: 15rem;
+  margin-bottom: 1rem;
+}
+
+.address-icon {
+  border-radius: 100%;
+  margin-bottom: 0.4rem;
+}
+
+@keyframes glow {
+  0% {
+    background: var(--color-primary);
+  }
+  25% {
+    background: var(--color-primary-light);
+  }
+  100% {
+    background: var(--color-primary);
+  }
+}

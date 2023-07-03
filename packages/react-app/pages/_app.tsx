@@ -11,6 +11,7 @@ import type { AppProps } from "next/app"
 // Import the RainbowKitProvider component to wrap the app with.
 import {
   connectorsForWallets,
+  darkTheme,
   RainbowKitProvider,
 } from "@rainbow-me/rainbowkit"
 
@@ -37,6 +38,12 @@ import Layout from "../components/Layout"
 
 // Import the ToastContainer component from react-toastify to display notifications.
 import { ToastContainer } from "react-toastify"
+
+// Import ThemeProvider from antd to wrap the app with.
+import { ConfigProvider, theme } from "antd"
+
+// import ProductsProvider from "@/context/ProductsProvider"
+import { ProductsProvider } from "@/context/productsContext"
 
 // Configure the information for the chains we want to connect to through RainbowKit.
 const { chains, provider } = configureChains(
@@ -71,16 +78,22 @@ const wagmiClient = createClient({
 })
 
 // Create and export the App component wrapped with the RainbowKitProvider and WagmiConfig.
+// Also Wrap with the ant.design ConfigProvider to set the theme to dark.
+// Wrap with the ProductsProvider to provide the products context to the app.
 function App({ Component, pageProps }: AppProps) {
   return (
-    <WagmiConfig client={wagmiClient}>
-      <RainbowKitProvider chains={chains} coolMode={true}>
-        <ToastContainer position={"top-center"} />
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <ConfigProvider theme={{ algorithm: theme.darkAlgorithm }}>
+      <WagmiConfig client={wagmiClient}>
+        <RainbowKitProvider chains={chains} coolMode={true} theme={darkTheme()}>
+          <ToastContainer position={"top-center"} />
+          <ProductsProvider>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </ProductsProvider>
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </ConfigProvider>
   )
 }
 

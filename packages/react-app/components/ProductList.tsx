@@ -9,59 +9,32 @@ import Product from "@/components/Product"
 import ErrorAlert from "@/components/alerts/ErrorAlert"
 import LoadingAlert from "@/components/alerts/LoadingAlert"
 import SuccessAlert from "@/components/alerts/SuccessAlert"
+import { useProducts } from "@/hooks/State/useProducts"
+
+// import Row and Pagination from antd
+import { Row, Pagination } from "antd"
 
 // Define the ProductList component
 const ProductList = () => {
-  // Use the useContractCall hook to read how many products are in the marketplace contract
-  const { data } = useContractCall("getProductsLength", [], true)
-  // Convert the data to a number
-  const productLength = data ? Number(data.toString()) : 0
-  // Define the states to store the error, success and loading messages
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const [loading, setLoading] = useState("")
-  // Define a function to clear the error, success and loading states
-  const clear = () => {
-    setError("")
-    setSuccess("")
-    setLoading("")
-  }
-  // Define a function to return the products
-  const getProducts = () => {
-    // If there are no products, return null
-    if (!productLength) return null
-    const products = []
-    // Loop through the products, return the Product component and push it to the products array
-    for (let i = 0; i < productLength; i++) {
-      products.push(
-        <Product
-          key={i}
-          id={i}
-          setSuccess={setSuccess}
-          setError={setError}
-          setLoading={setLoading}
-          loading={loading}
-          clear={clear}
-        />
-      )
-    }
-    return products
-  }
+  const { error, loading, success, clear, getProducts, products } =
+    useProducts()
 
   // Return the JSX for the component
   return (
     <div>
       {/* If there is an alert, display it */}
-      {error && <ErrorAlert message={error} clear={clear} />}
+      {error && <ErrorAlert message={error} clear={clear!} />}
       {success && <SuccessAlert message={success} />}
       {loading && <LoadingAlert message={loading} />}
       {/* Display the products */}
-      <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
-        <h2 className="sr-only">Products</h2>
-        <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
+      <div className="">
+        <h1 style={{ fontSize: 24, margin: "1.5rem 0", color: "#fff" }}>
+          Products
+        </h1>
+        <Row gutter={[16, 20]}>
           {/* Loop through the products and return the Product component */}
-          {getProducts()}
-        </div>
+          {products}
+        </Row>
       </div>
     </div>
   )
