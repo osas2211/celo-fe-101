@@ -12,11 +12,7 @@ interface IERC20Token {
     function approve(address, uint256) external returns (bool);
 
     // Transfers tokens from one address to another, with the permission of the first address
-    function transferFrom(
-        address,
-        address,
-        uint256
-    ) external returns (bool);
+    function transferFrom(address, address, uint256) external returns (bool);
 
     // Returns the total supply of tokens
     function totalSupply() external view returns (uint256);
@@ -61,10 +57,16 @@ contract Marketplace {
         uint256 price;
         // Number of times the product has been sold
         uint256 sold;
+        // Number of items available for sale
+        uint256 availableItems;
     }
 
     // Mapping of products to their index
     mapping(uint256 => Product) internal products;
+
+    // Mappping of user to productRatedStatus
+    mapping(address => mapping(uint256 => bool))
+        internal userProductRatingStatus;
 
     // Writes a new product to the marketplace
     function writeProduct(
@@ -72,7 +74,8 @@ contract Marketplace {
         string memory _image,
         string memory _description,
         string memory _location,
-        uint256 _price
+        uint256 _price,
+        uint256 _availableItems
     ) public {
         // Number of times the product has been sold is initially 0 because it has not been sold yet
         uint256 _sold = 0;
@@ -85,7 +88,8 @@ contract Marketplace {
             _description,
             _location,
             _price,
-            _sold
+            _sold,
+            _availableItems
         );
         // Increases the number of products in the marketplace by 1
         productsLength++;
@@ -95,30 +99,9 @@ contract Marketplace {
     function readProduct(
         // Index of the product
         uint256 _index
-    )
-        public
-        view
-        returns (
-            // Address of the product owner, payable because the owner can receive tokens
-            address payable,
-            string memory,
-            string memory,
-            string memory,
-            string memory,
-            uint256,
-            uint256
-        )
-    {
+    ) public view returns (Product memory) {
         // Returns the details of the product
-        return (
-            products[_index].owner,
-            products[_index].name,
-            products[_index].image,
-            products[_index].description,
-            products[_index].location,
-            products[_index].price,
-            products[_index].sold
-        );
+        return products[_index];
     }
 
     // Buys a product from the marketplace
@@ -126,6 +109,8 @@ contract Marketplace {
         // Index of the product
         uint256 _index
     ) public payable {
+        // Check if product is still available
+        require(products[_index].availableItems > 0, "Item sold out");
         // Transfers the tokens from the buyer to the seller
         require(
             IERC20Token(cUsdTokenAddress).transferFrom(
@@ -139,7 +124,8 @@ contract Marketplace {
             // If transfer fails, throw an error message
             "Transfer failed."
         );
-        // Increases the number of times the product has been sold
+        // Decrease the number of product available
+        products[_index].availableItems--;
         products[_index].sold++;
     }
 

@@ -25,8 +25,8 @@ import { useContractCall } from "@/hooks/contract/useContractRead"
 
 // Define the AddProductModal component
 const AddProductModal = () => {
-  //
-  const { getProducts, setProducts, products } = useProducts()
+  // Use the useProducts hook to refetch and get the latest products
+  const { getProducts, products } = useProducts()
   // The visible state is used to toggle the visibility of the modal
   const [visible, setVisible] = useState(false)
   // The following states are used to store the values of the input fields
@@ -35,6 +35,7 @@ const AddProductModal = () => {
   const [productImage, setProductImage] = useState("")
   const [productDescription, setProductDescription] = useState("")
   const [productLocation, setProductLocation] = useState("")
+  const [availableProducts, setAvailableProducts] = useState<number | string>(0)
 
   // The following states are used to debounce the input fields
   const [debouncedProductName] = useDebounce(productName, 500)
@@ -42,6 +43,7 @@ const AddProductModal = () => {
   const [debouncedProductImage] = useDebounce(productImage, 500)
   const [debouncedProductDescription] = useDebounce(productDescription, 500)
   const [debouncedProductLocation] = useDebounce(productLocation, 500)
+  const [debouncedAvailableProducts] = useDebounce(availableProducts, 500)
   const [loading, setLoading] = useState("")
   const [displayBalance, setDisplayBalance] = useState(false)
 
@@ -51,7 +53,8 @@ const AddProductModal = () => {
     productPrice &&
     productImage &&
     productLocation &&
-    productDescription
+    productDescription &&
+    availableProducts
 
   // Clear the input fields after the product is added to the marketplace
   const clearForm = () => {
@@ -60,6 +63,7 @@ const AddProductModal = () => {
     setProductImage("")
     setProductDescription("")
     setProductLocation("")
+    setAvailableProducts(0)
   }
 
   // Convert the product price to wei
@@ -74,6 +78,7 @@ const AddProductModal = () => {
     debouncedProductDescription,
     debouncedProductLocation,
     productPriceInWei,
+    debouncedAvailableProducts,
   ])
 
   // Use the useContractCall hook to read how many products are in the marketplace contract
@@ -181,6 +186,7 @@ const AddProductModal = () => {
                     }}
                     required
                     type="text"
+                    value={productName}
                   />
 
                   <label>Product Image (URL)</label>
@@ -191,6 +197,7 @@ const AddProductModal = () => {
                     }}
                     required
                     type="text"
+                    value={productImage}
                   />
 
                   <label>Product Description</label>
@@ -201,6 +208,7 @@ const AddProductModal = () => {
                     }}
                     required
                     type="text"
+                    value={productDescription}
                   />
 
                   <label>Product Location</label>
@@ -211,6 +219,7 @@ const AddProductModal = () => {
                     }}
                     required
                     type="text"
+                    value={productLocation}
                   />
 
                   <label>Product Price (cUSD)</label>
@@ -221,6 +230,18 @@ const AddProductModal = () => {
                     }}
                     required
                     type="number"
+                    value={productPrice}
+                  />
+
+                  <label>Number of Products in Stock</label>
+                  <Input
+                    style={{ marginBottom: 10 }}
+                    onChange={(e) => {
+                      setAvailableProducts(e.target.value)
+                    }}
+                    required
+                    type="number"
+                    value={availableProducts}
                   />
                 </div>
               </div>

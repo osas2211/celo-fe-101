@@ -19,10 +19,11 @@ import { useContractApprove } from "@/hooks/contract/useApprove"
 import { useContractCall } from "@/hooks/contract/useContractRead"
 import { useContractSend } from "@/hooks/contract/useContractWrite"
 
-// Import Button, Tag and Column from antd
-import { Button, Tag, Col } from "antd"
+// Import Button, Tag, Column and Rate from antd
+import { Button, Tag, Col, Rate } from "antd"
 // import Location Icon from ant-icons
 import { EnvironmentFilled } from "@ant-design/icons"
+import { useProducts } from "@/hooks/State/useProducts"
 // Define the interface for the product, an interface is a type that describes the properties of an object
 interface Product {
   name: string
@@ -32,10 +33,17 @@ interface Product {
   description: string
   location: string
   sold: boolean
+  availableProducts: number
 }
 
 // Define the Product component which takes in the id of the product and some functions to display notifications
 const Product = ({ id, setError, setLoading, clear }: any) => {
+  // Use the useProducts hook to refetch and get the latest products
+  const { getProducts } = useProducts()
+  // Use the useContractCall hook to read how many products are in the marketplace contract
+  const { data } = useContractCall("getProductsLength", [], true)
+  const productLength = data ? Number(data.toString()) : 0
+
   // Use the useAccount hook to store the user's address
   const { address } = useAccount()
   // Use the useContractCall hook to read the data of the product with the id passed in, from the marketplace contract
@@ -60,8 +68,11 @@ const Product = ({ id, setError, setLoading, clear }: any) => {
       location: rawProduct[4],
       price: Number(rawProduct[5]),
       sold: rawProduct[6].toString(),
+      availableProducts: Number(rawProduct[7]),
     })
   }, [rawProduct])
+
+  // Rating Description
 
   // Call the getFormatProduct function when the rawProduct state changes
   useEffect(() => {
@@ -101,6 +112,8 @@ const Product = ({ id, setError, setLoading, clear }: any) => {
         success: "Product purchased successfully",
         error: "Failed to purchase product",
       })
+      // Refetch Products after purchase.
+      getProducts(productLength)
       // If there is an error, display the error message
     } catch (e: any) {
       console.log({ e })
@@ -143,7 +156,7 @@ const Product = ({ id, setError, setLoading, clear }: any) => {
           <div style={{ marginTop: 10 }}>
             <div className={""}>
               {/* Show the product name */}
-              <p className="">{product.name}</p>
+              <p style={{ fontWeight: 500 }}>{product.name}</p>
               <div className={""}>
                 {/* Show the product description */}
                 <p style={{ fontWeight: 300 }} className="">
@@ -151,7 +164,12 @@ const Product = ({ id, setError, setLoading, clear }: any) => {
                 </p>
               </div>
             </div>
-
+            <div style={{ margin: "0.7rem 0", display: "flex" }}>
+              <p>Stocks Available: </p>
+              <Tag style={{ fontSize: 16, marginLeft: "0.5rem" }}>
+                {product.availableProducts}
+              </Tag>
+            </div>
             <div>
               <div style={{ margin: "5px 0 20px 0" }}>
                 {/* Show the product location */}
@@ -166,9 +184,17 @@ const Product = ({ id, setError, setLoading, clear }: any) => {
                 onClick={purchaseProduct}
                 style={{ width: "100%" }}
                 type="dashed"
+                disabled={product.availableProducts === 0 ? true : false}
               >
-                {/* Show the product price in cUSD */}
-                Buy for {productPriceFromWei} cUSD
+                {/* Disable button and show sold out when the available stock is zero */}
+                {product.availableProducts === 0 ? (
+                  <>SOLD OUT</>
+                ) : (
+                  <>
+                    {/* Show the product price in cUSD */}
+                    Buy for {productPriceFromWei} cUSD
+                  </>
+                )}
               </Button>
             </div>
           </div>
