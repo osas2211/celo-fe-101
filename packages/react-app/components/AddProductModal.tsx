@@ -48,13 +48,56 @@ const AddProductModal = () => {
   const [displayBalance, setDisplayBalance] = useState(false)
 
   // Check if all the input fields are filled
-  const isComplete =
+    const isDisabled =
     productName &&
     productPrice &&
     productImage &&
     productLocation &&
     productDescription &&
     availableProducts
+
+  // Validate a url
+  function isValidUrl(url:string) {
+    let isValid = false;
+
+    try {
+      const parsedUrl = new URL(url);
+      isValid = true;
+    } catch (error) {
+      isValid = false;
+    }
+
+    return isValid;
+  }
+
+  // Check if all the input fields are filled
+   const isComplete = () => {
+    if (productName.replace(/^[ ]+|[ ]+$/g, '').length < 2) {
+      toast.warn("Please enter valid product name (2 characters or more)")
+      return false;
+    }
+    if (!isValidUrl(productImage)) {
+      toast.warn("Please enter a valid image url")
+      return false;
+    }
+    if (productDescription.replace(/^[ ]+|[ ]+$/g, '').split(" ").length < 2) {
+      toast.warn("Please enter a valid product description (2 words or more)")
+      return false;
+    }
+    if (productLocation.replace(/^[ ]+|[ ]+$/g, '').length < 2) {
+      toast.warn("Please enter a valid product location")
+      return false;
+    }
+    if (Number(productPrice) < 1) {
+      toast.warn("Please enter a valid product price (> 0)")
+      return false;
+    }
+    if (Number(availableProducts) < 1) {
+      toast.warn("Please enter a valid number of products available (> 0)")
+      return false;
+    }
+    return true
+  }
 
   // Clear the input fields after the product is added to the marketplace
   const clearForm = () => {
@@ -91,7 +134,7 @@ const AddProductModal = () => {
       throw "Failed to create product"
     }
     setLoading("Creating...")
-    if (!isComplete) throw new Error("Please fill all fields")
+    if (!isComplete()) throw new Error("Please fill all fields")
     // Create the product by calling the writeProduct function on the marketplace contract
     const purchaseTx = await createProduct()
     setLoading("Waiting for confirmation...")
@@ -130,6 +173,7 @@ const AddProductModal = () => {
   const { data: cusdBalance } = useBalance({
     address,
     token: erc20Instance.address as `0x${string}`,
+    watch: true,
   })
 
   // If the user is connected and has a balance, display the balance
@@ -165,7 +209,7 @@ const AddProductModal = () => {
           open={visible}
           okText={loading ? loading : "Create"}
           okButtonProps={{
-            disabled: !!loading || !isComplete || !createProduct,
+            disabled: !!loading || !isDisabled || !createProduct,
           }}
           onCancel={() => setVisible(false)}
           onOk={addProduct}
